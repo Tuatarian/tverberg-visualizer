@@ -185,13 +185,15 @@ def safe_union(meshes):
             print(f"  Unioning with mesh {i+1}/{len(valid_meshes)} (volume: {mesh.volume:.6f})")
             new_union = union_mesh.union(mesh)
             
+            # if is_valid_volume_mesh(new_union):
             if is_valid_volume_mesh(new_union):
                 union_mesh = new_union
                 print(f"    Result volume: {union_mesh.volume:.6f}")
             else:
-                print(f"    Union produced invalid result, skipping mesh {i+1}")
+                print(f"    Degenerate mesh {i+1}, skipping")
                 continue
-                
+        
+        print(f"Volume gap between Union and Hull: {union_mesh.convex_hull.volume - union_mesh.volume}")
         return union_mesh
         
     except Exception as e:
