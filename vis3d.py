@@ -116,19 +116,35 @@ def draw(ax, points, r):
                 
                 if need_append:
                     hulls.append(hull12)
+        # hulls = [hull1, hull2, hull12]
+        # for hull in hulls:
+        #     rmesh = trimesh.Trimesh(vertices=hull.vertices, faces=hull.faces)
+        #     ax.plot_trisurf(rmesh.vertices[:, 0], rmesh.vertices[:, 1], rmesh.vertices[:, 2], triangles=rmesh.faces, alpha=0.1)
+        #     for face in hull.faces:
+        #         face_points = hull.vertices[face]
+        #         ax.plot3D(*zip(face_points[1], face_points[2]), c='black', linewidth=2.0)
+        #         ax.plot3D(*zip(face_points[2], face_points[0]), c='black', linewidth=2.0)
+        #         ax.plot3D(*zip(face_points[0], face_points[1]), c='black', linewidth=2.0)
+        # rmesh = trimesh.Trimesh(vertices=hull12.vertices, faces=hull12.faces)
+        # ax.plot_trisurf(rmesh.vertices[:, 0], rmesh.vertices[:, 1], rmesh.vertices[:, 2], triangles=rmesh.faces, alpha=0.8)
+        # for face in hull12.faces:
+        #     face_points = hull.vertices[face]
+        #     ax.plot3D(*zip(face_points[1], face_points[2]), c='black', linewidth=2.0)
+        #     ax.plot3D(*zip(face_points[2], face_points[0]), c='black', linewidth=2.0)
+        #     ax.plot3D(*zip(face_points[0], face_points[1]), c='black', linewidth=2.0)
+        # break
     print(f"Unioned {num_hulls} intersections")
     print(len(hulls))
-    hulls = merge_hulls(hulls)
+    # hulls = merge_hulls(hulls)
     print(len(hulls))
     for hull in hulls:
         rmesh = trimesh.Trimesh(vertices=hull.vertices, faces=hull.faces)
-        ax.plot_trisurf(rmesh.vertices[:, 0], rmesh.vertices[:, 1], rmesh.vertices[:, 2], triangles=rmesh.faces)
+        ax.plot_trisurf(rmesh.vertices[:, 0], rmesh.vertices[:, 1], rmesh.vertices[:, 2], triangles=rmesh.faces, alpha=0.1)
         for face in hull.faces:
             face_points = hull.vertices[face]
             ax.plot3D(*zip(face_points[1], face_points[2]), c='black', linewidth=2.0)
             ax.plot3D(*zip(face_points[2], face_points[0]), c='black', linewidth=2.0)
             ax.plot3D(*zip(face_points[0], face_points[1]), c='black', linewidth=2.0)
-    plt.draw_all()
 
 def on_key_press(event):
     global points, r, ax
