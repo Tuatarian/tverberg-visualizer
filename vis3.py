@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from itertools import combinations, permutations
 from scipy.spatial import ConvexHull
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -140,22 +141,22 @@ def safe_intersection(meshes):
     if len(valid_meshes) == 1:
         return valid_meshes[0]
     
-    print(f"Computing intersection of {len(valid_meshes)} valid meshes...")
+    # print(f"Computing intersection of {len(valid_meshes)} valid meshes...")
     
     try:
         # Start with the first mesh and intersect with each subsequent mesh
         intersection = valid_meshes[0]
-        print(f"  Starting with mesh volume: {intersection.volume:.6f}")
+        # print(f"  Starting with mesh volume: {intersection.volume:.6f}")
         
         for i, mesh in enumerate(valid_meshes[1:], 1):
-            print(f"  Intersecting with mesh {i+1}/{len(valid_meshes)} (volume: {mesh.volume:.6f})")
+            # print(f"  Intersecting with mesh {i+1}/{len(valid_meshes)} (volume: {mesh.volume:.6f})")
             new_intersection = intersection.intersection(mesh)
             
             if is_valid_volume_mesh(new_intersection):
                 intersection = new_intersection
-                print(f"    Result volume: {intersection.volume:.6f}")
+                # print(f"    Result volume: {intersection.volume:.6f}")
             else:
-                print(f"    Intersection became invalid or empty")
+                # print(f"    Intersection became invalid or empty")
                 return None
                 
         return intersection
@@ -179,16 +180,16 @@ def safe_union(meshes):
     try:
         # Sequential union approach
         union_mesh = valid_meshes[0]
-        print(f"  Starting with mesh volume: {union_mesh.volume:.6f}")
+        # print(f"  Starting with mesh volume: {union_mesh.volume:.6f}")
         
         for i, mesh in enumerate(valid_meshes[1:], 1):
-            print(f"  Unioning with mesh {i+1}/{len(valid_meshes)} (volume: {mesh.volume:.6f})")
+            # print(f"  Unioning with mesh {i+1}/{len(valid_meshes)} (volume: {mesh.volume:.6f})")
             new_union = union_mesh.union(mesh)
             
             # if is_valid_volume_mesh(new_union):
             if is_valid_volume_mesh(new_union):
                 union_mesh = new_union
-                print(f"    Result volume: {union_mesh.volume:.6f}")
+                print(f"    Result volume after mesh {i+1}: {union_mesh.volume:.6f}")
             else:
                 print(f"    Degenerate mesh {i+1}, skipping")
                 continue
@@ -215,45 +216,47 @@ def plot_all_intersections(points, partitions):
     
     # For each partition, compute the intersection of all r tetrahedra in that partition
     for partition_idx, partition in enumerate(partitions):
-        print(f"\nProcessing partition {partition_idx + 1}/{len(partitions)}:")
+        # print(f"\nProcessing partition {partition_idx + 1}/{len(partitions)}:")
         
         # Convert each tetrahedron in this partition to a mesh
         meshes = []
         for tetra_idx, tetra_indices in enumerate(partition):
             mesh = tetrahedron_to_mesh(points[tetra_indices])
-            if mesh:
-                meshes.append(mesh)
-                print(f"  Tetrahedron {tetra_idx + 1}: volume = {mesh.volume:.6f}")
+            if mesh:                meshes.append(mesh)
+                # print(f"  Tetrahedron {tetra_idx + 1}: volume = {mesh.volume:.6f}")
             else:
-                print(f"  Tetrahedron {tetra_idx + 1}: invalid")
+                # print(f"  Tetrahedron {tetra_idx + 1}: invalid")
+                pass
         
         # Compute intersection of all tetrahedra in this partition
         if len(meshes) == r:  # We should have exactly r valid tetrahedra
             intersection = safe_intersection(meshes)
             if intersection:
                 all_intersections.append(intersection)
-                print(f"  Partition intersection volume: {intersection.volume:.6f}")
+                # print(f"  Partition intersection volume: {intersection.volume:.6f}")
             else:
-                print(f"  Partition intersection: empty or invalid")
+                # print(f"  Partition intersection: empty or invalid")
+                pass
         else:
             print(f"  Partition has only {len(meshes)}/{r} valid tetrahedra")
 
-    # Draw all intersections with the same color
-    intersection_color = 'blue'
-    for inter in all_intersections:
-        draw_mesh(ax, inter, color=intersection_color, alpha=0.6)
+    # Draw all intersections with distinct colors
+    cmap = cm.get_cmap('tab20')  # Use colormap with up to 20 distinct colors
+    for i, inter in enumerate(all_intersections):
+        color = cmap(i % cmap.N)  # Cycle through the colormap
+        draw_mesh(ax, inter, color=color, alpha=0.6)
 
     # Compute and draw union wireframe
     if all_intersections:
         print(f"\nFound {len(all_intersections)} partition intersections")
         union_mesh = safe_union(all_intersections)
-        if union_mesh:
+        if union_mesh and False:
             print(f"Union of all intersections: volume = {union_mesh.volume:.6f}")
             draw_wireframe(ax, union_mesh, color='black', linewidth=2.0)
         else:
             print("Union failed - drawing individual wireframes")
             for inter in all_intersections:
-                draw_wireframe(ax, inter, color='black', linewidth=1.0)
+                draw_wireframe(ax, inter, color='black', linewidth=2.0)
     else:
         ax.text2D(0.5, 0.5, "No intersections found", transform=ax.transAxes, 
                   ha='center', va='center', fontsize=12, color='red')
@@ -279,9 +282,12 @@ def regenerate():
     global points, partitions, partition_index, num_points
     num_points = 4 * r  # Ensure we have exactly 4*r points
     points = generate_points()
+    print(f"\nCurrent points ({len(points)} total):")
+    print(points)  # 🖨️ Print the generated points
     partitions = generate_tetrahedron_partitions(points, r)
     partition_index = 0
     plot_all_intersections(points, partitions)
+
 
 def on_key(event):
     global r, num_points
