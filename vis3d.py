@@ -16,6 +16,7 @@ def generate_random_points(r):
         np.ndarray: A 2D array of shape (4*r + 1, 3) containing the random points.
     """
     points = np.random.rand(4*r + 1, 3)
+    print(points)
     return points
 
 def plot_points(ax, points):
